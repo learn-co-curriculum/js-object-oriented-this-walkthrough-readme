@@ -100,7 +100,7 @@ So as you see from the above examples, we sometimes reference `this` from functi
 
 ### This and Callbacks
 
-Now we have seen functions call other functions whenever we use a callback.  And it's worth reminding ourself that many out of the box JavaScript functions are passed callbacks.  So if we did something like the following:
+Now we have seen functions call other functions whenever we use a callback.  And it's worth reminding ourselves that many out of the box JavaScript functions are passed callbacks.  So if we did something like the following:
 
 ```js
   [1, 2, 3].filter(function(element){
