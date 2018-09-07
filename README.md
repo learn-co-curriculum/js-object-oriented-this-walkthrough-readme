@@ -1,119 +1,266 @@
 # JavaScript This Walkthrough
 
 ## Objectives
-+ Understand how `this` depends on the invocation of a method
 
-## Deep Dive into This
+- Understand how `this` depends on the invocation of a method
 
-JavaScript's `this` keyword can sometimes be unpredictable. Now that we are going deeper into object oriented code, we should discuss it with the detail that it deserves.  So let's explain our rule to know what `this` is.  Our rule is simple:   
+## Deep Dive into `this`
 
-**If this is referenced directly inside a method, it equals the object that received the method call.  Otherwise this is global**
+JavaScript's `this` keyword can sometimes be unpredictable. Now that we are
+going deeper into object oriented code, we should discuss it with the detail
+that it deserves. In brief, the value of `this` changes based on where it is.
 
-The rest of this lesson will show all of the twists and turns we can encounter in strictly applying the above rule.  But first, let's make sure we properly define the word *method*.  A JavaScript method is a property on an object that points to a function.  So just like we can write `let person = {name: 'bob'}`, whereby the `name` property points to a value of `'bob'`, we can also write the following:
+- Outside of any function, `this` refers to the [global object][global]. In
+  web browsers, this is the [window][window]
+
+- Inside an object method, `this` refers to the object that received the method
+  call
+
+- Inside a standalone function, `this` will either default to the
+  [global object][global] _or_ be `undefined`
+
+Let's make sure we properly define the word _method_. A JavaScript method is a
+property on an object that points to a function. So just like we can write `let person = {name: 'bob'}`, whereby the `name` property points to a value of
+`'bob'`, we can also write the following:
 
 ```javascript
-
 let person = {
-  greet: function(){
-    console.log('hello')
-  }
-}
+	greet: function() {
+		console.log('hello');
+	}
+};
 
-typeof person.greet
+typeof person.greet;
 // 'function'
 ```
 
-And have the `greet` property point to a function.  Because this `greet` property on our object points to a function, we call the property a method.  Ok, so because the `greet` property is a method, we know that when we call `person.greet()` the object receiving the method call equals `person`.  Let's modify our `greet` function and see that:
+And have the `greet` property point to a function. Because this `greet` property
+points to a function, we call the property a method. Ok, so because the `greet`
+property is a method, we know that when we call `person.greet()` the object
+receiving the method call equals `person`. Let's modify our `greet` function and
+see that:
 
 ```javascript
-
 let person = {
-  greet: function(){
-    return this
-  }
-}
+	greet: function() {
+		return this;
+	}
+};
 
-typeof person.greet
+typeof person.greet;
 // 'function'
-person.greet() == person
+person.greet() == person;
 // true
 ```
 
-We see that `person.greet()` returns `this`, which refers to the object that received the method call.
+We see that `person.greet()` returns `this`, which refers to the object that
+received the method call.
 
-### Watching this change
+#### Watching `this` Change
 
-Ok, hang on tight, because we are about to see something weird.  Let's modify the code above slightly:
+Ok, hang on tight, because we are about to see something weird. Let's modify the
+code above slightly:
 
 ```javascript
-
 let person = {
-  greet: function(){
-    return this
-  }
-}
+	greet: function() {
+		return this;
+	}
+};
 
-person.greet() == person
+person.greet() == person;
 // true
 
-let greetFn = person.greet
+let greetFn = person.greet;
 
-greetFn() == person
+greetFn() == person;
 // false
-greetFn()
+greetFn();
 // window
 
-person.greet() == person
+person.greet() == person;
 // true
 ```
 
-Ok, so let's walk through the code above.  We set our `greet` property on the `person` object to point to the same function, and see that when we call `person.greet()`, `this` refers to the `person` object.  The tricky part happens when we write `let greetFn = person.greet`.  What this does is assign a local variable `greetFn` to refer to the function on the `person` object.  However, this local variable **does not** refer to the `person` object at all.  It has zero knowledge of the `person` object.  It *only* points to the function.  Then we invoke the function by calling `greetFn()`.  In doing so, we are not calling the property on the object, we are simply invoking the function, making `this` global - or in the context of the browser, `window`.
+Ok, so let's walk through the code above. We set our `greet` property on the
+`person` object to point to the same function, and see that when we call
+`person.greet()`, `this` refers to the `person` object.
 
-### Functions within Functions
+The tricky part happens when we write `let greetFn = person.greet`. What this
+does is assign a local variable `greetFn` to refer to the function on the
+`person` object. However, this local variable **does not** refer to the `person`
+object at all. It has zero knowledge of the `person` object. It _only_ points to
+the function. Then we invoke the function by calling `greetFn()`. In doing so,
+we are not calling the property on the object, we are simply invoking the
+function.
 
-Let's see another occurrence where `this` becomes global, by invoking functions within functions.  Let's change our code to look like the following:
+When the function is invoked, `this` refers to `window`, our global object.
+
+#### Functions Within Functions
+
+Another occurrence where `this` becomes the global object is when we invoke
+functions within functions. Let's change our code to look like the following:
 
 ```javascript
-
 let person = {
-  greet: function greeting(){
-   function otherFunction(){
-     return this
-   }
-   return otherFunction()
-  }
+	greet: function() {
+		function otherFunction() {
+			return this;
+		}
+		return otherFunction();
+	}
+};
+```
+
+Ok, let's walk through what the above code is doing. Our object, `person` has a
+property `greet` that contains to a function. Now when this method, `greet`, is
+called, it first declares and then invokes the `otherFunction` function. The
+`otherFunction` returns `this`, which is then returned by the `greet` method. So
+what does `this` equal? Well, note that `this` **is not** referenced directly
+inside a method. `otherFunction` is not a _method_, just a function.
+
+```javascript
+let person = {
+	greet: function() {
+		// this == person
+		function otherFunction() {
+			// this == window
+			return this;
+		}
+
+		// otherFunction is invoked, returning the functions value of `this`, which is window
+		return otherFunction();
+	}
+};
+
+person.greet();
+// window
+```
+
+Remember, a method is a property that points to a function. If we call the
+`person.greet` property, it invokes an anonymous function. That function _is_ in
+the context of `person`. The function it _contains_, `otherFunction`, is
+**not**.
+
+With the exception of arrow functions, every time a function is invoked, `this`
+will be defined based on the context that it is in. Inside `otherFunction`,
+`this` defaults to the global object.
+
+#### Callbacks
+
+The previous example may seem unnecessarily complicated, but we actually include
+functions in other functions whenever we use callbacks. In fact, many out of the
+box JavaScript functions are passed callbacks. So if we did something like the
+following:
+
+```js
+[1, 2, 3].filter(function(element) {
+	console.log(this);
+	return element % 2 == 0;
+});
+// window
+// window
+// window
+```
+
+Each time our callback function is invoked, `this` is global. Do you see why?
+Our function is invoked by the `filter` method. Filter is a _method_. We can
+invoke it as a property on our array. However, the callback function is not
+called as a property on an object, and thus when we reference `this` from inside
+the callback function, `this` will refer the window, or global object.
+
+## Exceptions
+
+#### Arrow Functions
+
+Arrow functions do not have their own `this`. Instead, an arrow function uses
+whatever `this` is defined in its enclosing scope. So, for instance, if we
+_rewrote_ our last person object:
+
+```javascript
+let person = {
+	greet: function() {
+		// this == person
+		const otherFunction = () => {
+			// this == window
+			return this;
+		};
+
+		// otherFunction is invoked, returning the functions value of `this`, which is window
+		return otherFunction();
+	}
+};
+
+person.greet();
+// {greet: f}
+```
+
+The arrow function inside `greeting` uses `this` from the class method, which
+refers to the person object.
+
+#### Classes
+
+Sometimes, when called from inside a function, `this` will be `undefined`. This
+is due to the use of [strict mode][strict].
+
+Methods defined within [JavaScript classes][classes] are **executed in strict
+mode**. This affects any functions invoked inside a class method, so if we were
+to rewrite our `person` object into a class:
+
+```js
+class Person {
+	constructor(name) {
+		this.name;
+	}
+
+	greeting() {
+		function innerFunction() {
+			return this;
+		}
+		return innerFunction();
+	}
 }
 
+let sally = new Person('Sally');
+sally.greeting();
+// undefined
 ```
 
-Ok, let's walk through what the above code is doing.  Our object, `person` has a property `greet` that points to a function called `greeting`.  Now when our method `greet` is called, it first declares and then invokes the `otherFunction` function.  The `otherFunction` returns `this`, which is returned by the `greet` method.  So what does this equal.  Well, note that `this` **is not** referenced directly inside a method.  This is because `otherFunction` is not a method, but a function.
+We will get `undefined` when invoking the `greeting` method.
 
-Remember, a method is a property that points to function.  If we call the `person.greet` property, it returns the `greeting` function, not `otherFunction`.  Because no property on an object points to `otherFunction`, `otherFunction` is not a method, and as `this` is referenced in our non-method, `this` is global, or the window.
+## Summary
 
-```js
+The above lesson displayed how `this` changes depending on how a function is
+called and where that function is. We can make an addendum to our original
+rules about `this`:
 
-  person.greet()
-  // window
-```
+- Outside of any function, `this` refers to the [global object][global]. In
+  web browsers, this is the [window][window]
 
-So as you see from the above examples, we sometimes reference `this` from functions, not methods.  When that occurs, `this` is not referenced from inside a method, it is global.
+- Inside an object method, `this` refers to the object that received the method
+  call
 
-### This and Callbacks
+- Inside a standalone function, **even one inside a method**, `this` will
+  default to the [global object][global]
 
-Now we have seen functions call other functions whenever we use a callback.  And it's worth reminding ourselves that many out of the box JavaScript functions are passed callbacks.  So if we did something like the following:
+- When using [strict mode][strict] in a standalone function, as we do inside
+  classes, `this` will be undefined
 
-```js
-  [1, 2, 3].filter(function(element){
-    console.log(this)
-    return element%2 == 0
-  })
-  // window
-  // window
-  // window
-```
+- Arrow functions don't define their own `this` like standard functions do.
 
-Each time our callback function is invoked, `this` is global.  Do you see why?  Our function is invoked by the `filter` method.  Filter is a method.  We can invoke it as a property on our array.  However, the callback function is not called as a property on an object, and thus when we reference `this` from inside the callback function, `this` is the window, or global scope.
+We saw that even if a function was originally declared as a property on an
+object, if we do not reference the function as a method, `this` will default to
+the global object.
 
-### Summary
+We also saw how callback methods are a specific application of an inner function
+being called, and therefore `this` again defaults to the global object.
 
-The above lesson displayed how `this` changes depending on whether it is referenced from inside a method or a function.  We saw that even if a function was originally declared as a property on an object, if we do not reference the function as a method, `this` will be global.  We also saw that when a function invokes another function, from the inner function `this` is global.  Finally, we showed how callback methods are a specific application of an inner function being called, and therefore `this` is also global inside of callbacks passed to our array iterator methods.
+`this` has some specific behaviors that can sometimes lead to unexpected
+results. In later lessons, we will look at some built in JavaScript methods that
+actually allow us to control what `this` refers to, ensuring that when we fire a
+function, it will always be in the right context.
+
+[global]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this#Global_Context
+[window]: https://developer.mozilla.org/en-US/docs/Web/API/Window
+[strict]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
+[classes]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Strict_mode
