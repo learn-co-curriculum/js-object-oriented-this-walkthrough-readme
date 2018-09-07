@@ -114,6 +114,36 @@ Now we have seen functions call other functions whenever we use a callback.  And
 
 Each time our callback function is invoked, `this` is global.  Do you see why?  Our function is invoked by the `filter` method.  Filter is a method.  We can invoke it as a property on our array.  However, the callback function is not called as a property on an object, and thus when we reference `this` from inside the callback function, `this` is the window, or global scope.
 
+### `this` Behaviors With ES5 Functions vs. ES6 Arrow Functions
+
+ES5 functions in JavaScript bind their own `this`, but ES6 arrow functions do not.
+
+Example:
+```javascript
+function Obj() {
+  this.string = 'I am in the inner scope';
+}
+
+Obj.prototype.arrowFun = () => console.log(this.string);
+// uses the "this" keyword to call the object's "string" property to the console
+
+Obj.prototype.normalFun = function() {
+  console.log(this.string);
+};
+// also uses the "this" keyword to print the object's "string" property to the console
+
+const testObj = new Obj();
+
+testObj.arrowFun(); // the "this" keyword will return "undefined":
+
+> undefined
+
+testObj.normalFun(); // the "this" keyword will return the expected result:
+
+> I am in the inner scope
+```
+For this reason, arrow functions are best reserved for non-method functions.
+
 ### Summary
 
 The above lesson displayed how `this` changes depending on whether it is referenced from inside a method or a function.  We saw that even if a function was originally declared as a property on an object, if we do not reference the function as a method, `this` will be global.  We also saw that when a function invokes another function, from the inner function `this` is global.  Finally, we showed how callback methods are a specific application of an inner function being called, and therefore `this` is also global inside of callbacks passed to our array iterator methods.
