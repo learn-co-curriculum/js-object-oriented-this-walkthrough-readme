@@ -182,11 +182,11 @@ let person = {
 	greet: function() {
 		// this == person
 		const otherFunction = () => {
-			// this == window
+			// this == person still, due to the arrow function
 			return this;
 		};
 
-		// otherFunction is invoked, returning the functions value of `this`, which is window
+		// otherFunction is invoked, returning the functions value of `this`, which is person
 		return otherFunction();
 	}
 };
