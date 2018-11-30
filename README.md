@@ -264,3 +264,4 @@ function, it will always be in the right context.
 [window]: https://developer.mozilla.org/en-US/docs/Web/API/Window
 [strict]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 [classes]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Strict_mode
+
