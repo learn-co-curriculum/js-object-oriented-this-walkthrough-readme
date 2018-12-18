@@ -174,8 +174,8 @@ the callback function, `this` will refer the window, or global object.
 #### Arrow Functions
 
 Arrow functions do not have their own `this`. Instead, an arrow function uses
-whatever `this` is defined in its enclosing scope. So, for instance, if we
-_rewrote_ our last person object:
+whatever `this` is defined within the scope it is in. So, for instance, if we
+_rewrote_ our last `person` object:
 
 ```javascript
 let person = {
@@ -192,20 +192,18 @@ let person = {
 };
 
 person.greet();
-// {greet: f}
+// { greet: [Function: greet] }
 ```
 
-The arrow function inside `greeting` uses `this` from the class method, which
-refers to the person object.
+The arrow function assigned to `otherFunction` (inside of `greet`) uses `this`
+from the `person` object. `otherFunction` does not have its own `this`, so it
+defaults to using `this` from the scope it is in. The result is that `this`
+will now refer to `person`
 
 #### Classes
 
-Sometimes, when called from inside a function, `this` will be `undefined`. This
-is due to the use of [strict mode][strict].
-
-Methods defined within [JavaScript classes][classes] are **executed in strict
-mode**. This affects any functions invoked inside a class method, so if we were
-to rewrite our `person` object into a class:
+Methods defined within [JavaScript classes][classes] behave similarly. If we
+were to rewrite our `person` object into a class:
 
 ```js
 class Person {
@@ -213,7 +211,7 @@ class Person {
 		this.name;
 	}
 
-	greeting() {
+	greet() {
 		function innerFunction() {
 			return this;
 		}
@@ -226,7 +224,32 @@ sally.greeting();
 // undefined
 ```
 
-We will get `undefined` when invoking the `greeting` method.
+Inside `innerFunction`, `this` has defaulted back to undefined, as it does with
+normal functions. Once again, though, with an _arrow_ function, `this` will not
+be redefined, so we could rewrite the code as follows:
+
+```js
+class Person {
+	constructor(name) {
+		this.name;
+	}
+
+	greet() {
+		const innerFunction = () => {
+			return this;
+		};
+		return innerFunction();
+	}
+}
+
+let sally = new Person('Sally');
+sally.greeting();
+// Person {}
+```
+
+Now, the `this` inside of `innerFunction` will be based on the context the arrow
+function is in: the `greet()` method. Inside the `greet()` method context,
+`this` will refer to the object it is in: `Person`.
 
 ## Summary
 
@@ -264,33 +287,3 @@ function, it will always be in the right context.
 [window]: https://developer.mozilla.org/en-US/docs/Web/API/Window
 [strict]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode
 [classes]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Strict_mode
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
