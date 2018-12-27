@@ -220,7 +220,7 @@ class Person {
 }
 
 let sally = new Person('Sally');
-sally.greeting();
+sally.greet();
 // undefined
 ```
 
@@ -243,7 +243,7 @@ class Person {
 }
 
 let sally = new Person('Sally');
-sally.greeting();
+sally.greet();
 // Person {}
 ```
 
