@@ -198,7 +198,7 @@ person.greet();
 The arrow function assigned to `otherFunction` (inside of `greet`) uses `this`
 from the `person` object. `otherFunction` does not have its own `this`, so it
 defaults to using `this` from the scope it is in. The result is that `this`
-will now refer to `person`
+will now refer to `person`.
 
 #### Classes
 
